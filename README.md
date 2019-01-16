@@ -6,9 +6,6 @@ Are you looking for an instructor-led workshop based on these labs? Say [hello@w
 
 ## Labs
 
-* [Lab 01: Build and push a Docker image with CodeBuild](lab01-codebuild-ecr/)
-* [Lab 02: Integrate CodeBuild into CodePipeline](lab02-codebuild-codepipeline/)
-
 * [Lab 01: ECS Task Definition and IAM Roles](lab01-task-definition/)
 * [Lab 02: ECS Service and Application Load Balancer (ALB)](lab02-service/)
 * [Lab 03: Auto Scaling for ECS Service](lab03-autoscaling/)
