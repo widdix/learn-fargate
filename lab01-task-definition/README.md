@@ -14,11 +14,11 @@ cp lab01-task-definition/starting-point/service.yaml service.yaml
 
 Extend the CloudFormation template at `service.yml` with the following resources.
 
-## CloudWatch Log Group
+### CloudWatch Log Group
 
 Create a CloudWatch logs group to collect log messages from your tasks and containers. Make sure to define a log retention.
 
-## IAM Role
+### IAM Role
 
 Create two IAM roles.
 
@@ -51,7 +51,7 @@ Add the following policy to the task execution role. Restrict access to the Clou
 }
 ```
 
-## ECS Task Definition
+### ECS Task Definition
 
 Create a task definition as a blue print to launch tasks within your ECS cluster. The task definition should include the following details.
 

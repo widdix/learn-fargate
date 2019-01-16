@@ -35,34 +35,10 @@ Parameters:
 Resources:
   TargetGroup:
     Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
-    Properties:
-      HealthCheckIntervalSeconds: 15
-      HealthCheckPath: '/'
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 10
-      HealthyThresholdCount: 2
-      UnhealthyThresholdCount: 2
-      Matcher:
-        HttpCode: '200-299'
-      Port: 8080 # overriden when containers are attached
-      Protocol: HTTP
-      TargetType: ip
-      TargetGroupAttributes:
-      - Key: 'deregistration_delay.timeout_seconds'
-        Value: '30'
-      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+    # TODO
   LoadBalancerListenerRule:
     Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
-    Properties:
-      Actions:
-      - Type: forward
-        TargetGroupArn: !Ref TargetGroup
-      Conditions:
-      - Field: path-pattern
-        Values:
-        - '*'
-      ListenerArn: {'Fn::ImportValue': !Sub '${ParentClusterStack}-HttpListener'}
-      Priority: 10
+    # TODO
   TaskExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -143,135 +119,8 @@ Resources:
       RetentionInDays: 1
   ServiceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
-    Properties:
-      GroupDescription: !Sub '${AWS::StackName}-service'
-      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
-      SecurityGroupIngress:
-      - SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${ParentClusterStack}-LoadBalancerSecurityGroup'}
-        FromPort: 6081
-        ToPort: 6081
-        IpProtocol: tcp
+    # TODO
   Service:
     DependsOn: LoadBalancerListenerRule
     Type: 'AWS::ECS::Service'
-    Properties:
-      Cluster: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 100
-      DesiredCount: 2
-      HealthCheckGracePeriodSeconds: 60
-      LaunchType: FARGATE
-      LoadBalancers:
-      - ContainerName: 'ambassador'
-        ContainerPort: 6081
-        TargetGroupArn: !Ref TargetGroup
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED
-          SecurityGroups:
-          - !Ref ServiceSecurityGroup
-          Subnets: !Split [',', {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetsPublic'}]
-      TaskDefinition: !Ref TaskDefinition
-  ScalableTargetRole: # based on http://docs.aws.amazon.com/AmazonECS/latest/developerguide/autoscale_IAM_role.html
-    Type: 'AWS::IAM::Role'
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service: 'application-autoscaling.amazonaws.com'
-          Action: 'sts:AssumeRole'
-      Policies:
-      - PolicyName: AmazonEC2ContainerServiceAutoscaleRole
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - 'ecs:DescribeServices'
-            - 'ecs:UpdateService'
-            Resource: '*'
-      - PolicyName: cloudwatch
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - 'cloudwatch:DescribeAlarms'
-            Resource: '*'
-  ScalableTarget:
-    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
-    Properties:
-      MaxCapacity: 4
-      MinCapacity: 2
-      ResourceId: !Sub
-      - 'service/${Cluster}/${Service}'
-      - Cluster: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-        Service: !GetAtt 'Service.Name'
-      RoleARN: !GetAtt 'ScalableTargetRole.Arn'
-      ScalableDimension: 'ecs:service:DesiredCount'
-      ServiceNamespace: ecs
-  ScaleUpPolicy:
-    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
-    Properties:
-      PolicyName: !Sub '${AWS::StackName}-scale-up'
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref ScalableTarget
-      StepScalingPolicyConfiguration:
-        AdjustmentType: PercentChangeInCapacity
-        Cooldown: 300
-        MinAdjustmentMagnitude: 1
-        StepAdjustments:
-        - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 25
-  ScaleDownPolicy:
-    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
-    Properties:
-      PolicyName: !Sub '${AWS::StackName}-scale-down'
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref ScalableTarget
-      StepScalingPolicyConfiguration:
-        AdjustmentType: PercentChangeInCapacity
-        Cooldown: 300
-        MinAdjustmentMagnitude: 1
-        StepAdjustments:
-        - MetricIntervalUpperBound: 0
-          ScalingAdjustment: -25
-  CPUUtilizationHighAlarm:
-    Type: 'AWS::CloudWatch::Alarm'
-    Properties:
-      AlarmDescription: 'Service is running out of CPU'
-      Namespace: 'AWS/ECS'
-      Dimensions:
-      - Name: ClusterName
-        Value: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-      - Name: ServiceName
-        Value: !GetAtt 'Service.Name'
-      MetricName: CPUUtilization
-      ComparisonOperator: GreaterThanThreshold
-      Statistic: Average
-      Period: 300
-      EvaluationPeriods: 1
-      Threshold: 60
-      AlarmActions:
-      - !Ref ScaleUpPolicy
-  CPUUtilizationLowAlarm:
-    Type: 'AWS::CloudWatch::Alarm'
-    Properties:
-      AlarmDescription: 'Service is wasting CPU'
-      Namespace: 'AWS/ECS'
-      Dimensions:
-      - Name: ClusterName
-        Value: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-      - Name: ServiceName
-        Value: !GetAtt 'Service.Name'
-      MetricName: CPUUtilization
-      ComparisonOperator: LessThanThreshold
-      Statistic: Average
-      Period: 300
-      EvaluationPeriods: 3
-      Threshold: 30
-      AlarmActions:
-      - !Ref ScaleDownPolicy
+    # TODO

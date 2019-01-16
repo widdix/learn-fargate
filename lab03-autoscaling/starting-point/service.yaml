@@ -203,75 +203,16 @@ Resources:
             Resource: '*'
   ScalableTarget:
     Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
-    Properties:
-      MaxCapacity: 4
-      MinCapacity: 2
-      ResourceId: !Sub
-      - 'service/${Cluster}/${Service}'
-      - Cluster: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-        Service: !GetAtt 'Service.Name'
-      RoleARN: !GetAtt 'ScalableTargetRole.Arn'
-      ScalableDimension: 'ecs:service:DesiredCount'
-      ServiceNamespace: ecs
+    # TODO
   ScaleUpPolicy:
     Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
-    Properties:
-      PolicyName: !Sub '${AWS::StackName}-scale-up'
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref ScalableTarget
-      StepScalingPolicyConfiguration:
-        AdjustmentType: PercentChangeInCapacity
-        Cooldown: 300
-        MinAdjustmentMagnitude: 1
-        StepAdjustments:
-        - MetricIntervalLowerBound: 0
-          ScalingAdjustment: 25
+    # TODO
   ScaleDownPolicy:
     Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
-    Properties:
-      PolicyName: !Sub '${AWS::StackName}-scale-down'
-      PolicyType: StepScaling
-      ScalingTargetId: !Ref ScalableTarget
-      StepScalingPolicyConfiguration:
-        AdjustmentType: PercentChangeInCapacity
-        Cooldown: 300
-        MinAdjustmentMagnitude: 1
-        StepAdjustments:
-        - MetricIntervalUpperBound: 0
-          ScalingAdjustment: -25
+    # TODO
   CPUUtilizationHighAlarm:
     Type: 'AWS::CloudWatch::Alarm'
-    Properties:
-      AlarmDescription: 'Service is running out of CPU'
-      Namespace: 'AWS/ECS'
-      Dimensions:
-      - Name: ClusterName
-        Value: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-      - Name: ServiceName
-        Value: !GetAtt 'Service.Name'
-      MetricName: CPUUtilization
-      ComparisonOperator: GreaterThanThreshold
-      Statistic: Average
-      Period: 300
-      EvaluationPeriods: 1
-      Threshold: 60
-      AlarmActions:
-      - !Ref ScaleUpPolicy
+    # TODO
   CPUUtilizationLowAlarm:
     Type: 'AWS::CloudWatch::Alarm'
-    Properties:
-      AlarmDescription: 'Service is wasting CPU'
-      Namespace: 'AWS/ECS'
-      Dimensions:
-      - Name: ClusterName
-        Value: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
-      - Name: ServiceName
-        Value: !GetAtt 'Service.Name'
-      MetricName: CPUUtilization
-      ComparisonOperator: LessThanThreshold
-      Statistic: Average
-      Period: 300
-      EvaluationPeriods: 3
-      Threshold: 30
-      AlarmActions:
-      - !Ref ScaleDownPolicy
+    # TODO
