@@ -1,4 +1,4 @@
-# Lab 01: TODO
+# Lab 02: ECS Service and Application Load Balancer (ALB)
 
 ## Goal
 
