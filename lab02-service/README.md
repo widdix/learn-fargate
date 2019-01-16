@@ -12,7 +12,7 @@ Make sure you are starting from the starting point for Lab 01.
 cp lab02-service/starting-point/service.yaml service.yaml
 ```
 
-Extend the CloudFormation template at `service.yml` with the following resources.
+Extend the CloudFormation template at `service.yaml` with the following resources.
 
 ### ALB Target Group
 
