@@ -60,6 +60,8 @@ Create a task definition as a blue print to launch tasks within your ECS cluster
 * Container port for the `app` container: `80 (tcp)`
 * Docker image for the `ambassador` container: `eeacms/varnish:4.1-6.2`
 * Container port for the `ambassador` container: `6081 (tcp)`
+* Environment variable `BACKENDS` for the `ambassador` container: `localhost`
+* Environment variable `BACKENDS_PORT` for the `ambassador` container: `80`
 * Log driver for both containers: `awslogs`
 * The task role and task execution role from the previous step
 

@@ -15,7 +15,7 @@ Are you looking for an instructor-led workshop based on these labs? Say [hello@w
 Create your own VPC stack. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation create-stack --stack-name vpc-$user --template-body file://vpc-2azs.yaml
+aws cloudformation create-stack --stack-name vpc-$user --template-body file://templates/vpc-2azs.yaml
 ```
 
 Wait until the stack reached the status `CREATE_COMPLETE`.
@@ -23,7 +23,7 @@ Wait until the stack reached the status `CREATE_COMPLETE`.
 Create your own ECS cluster stack. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation create-stack --stack-name cluster-$user --template-body file://cluster.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
+aws cloudformation create-stack --stack-name cluster-$user --template-body file://templates/cluster.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
 ```
 
 You are now ready for the first lab.
