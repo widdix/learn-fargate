@@ -43,4 +43,5 @@ Resources:
     Type: 'AWS::ECS::TaskDefinition'
     # TODO
   LogGroup:
+    Type: 'AWS::Logs::LogGroup'
     # TODO
