@@ -22,7 +22,7 @@ Create a CloudWatch logs group to collect log messages from your tasks and conta
 
 Create two IAM roles.
 
-1. A task role used to authenticate and authorize AWS API requests from the containers.
+1. A task role used to authenticate and authorize AWS API requests from the containers. The role does not need an IAM policy for now, as the containers do not need to access the AWS API.
 1. A task execution role used by the container agent to access CloudWatch Logs, ECR, ...
 
 Add the following policy to the task execution role. Restrict access to the CloudWatch log group from the previous section.
@@ -64,6 +64,9 @@ Create a task definition as a blue print to launch tasks within your ECS cluster
 * Environment variable `BACKENDS_PORT` for the `ambassador` container: `80`
 * Log driver for both containers: `awslogs`
 * The task role and task execution role from the previous step
+* Define `0.25` CPU cores and 512 MB memory for the whole task.
+* The network mode `awsvpc` is mandatory for the use with Fargate.
+* Also add `FARGATE` as a possible launch type.
 
 Use the following command to create a stack based on your template. Replace `$user` with your name (e.g. `andreas`).
 
