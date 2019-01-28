@@ -36,7 +36,7 @@ aws cloudformation update-stack --stack-name service-$user --parameters Paramete
 
 Wait until the stack reaches the status `UPDATE_COMPLETE`.
 
-Congratulations, you have completed the second lab.
+Congratulations, you have completed the third lab.
 
 ## Help
 
