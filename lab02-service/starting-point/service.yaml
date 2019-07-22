@@ -77,7 +77,7 @@ Resources:
     Type: 'AWS::ECS::TaskDefinition'
     Properties:
       ContainerDefinitions:
-      - Name: ambassador
+      - Name: proxy
         Image: 'eeacms/varnish:4.1-6.2'
         PortMappings:
         - ContainerPort: 6081
@@ -88,7 +88,7 @@ Resources:
           Options:
             'awslogs-region': !Ref 'AWS::Region'
             'awslogs-group': !Ref LogGroup
-            'awslogs-stream-prefix': ambassador
+            'awslogs-stream-prefix': proxy
         Environment:
         - Name: BACKENDS
           Value: localhost

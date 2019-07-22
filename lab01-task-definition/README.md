@@ -55,13 +55,13 @@ Add the following policy to the task execution role. Restrict access to the Clou
 
 Create a task definition as a blue print to launch tasks within your ECS cluster. The task definition should include the following details.
 
-* Two containers: `app` and `ambassador`
+* Two containers: `app` and `proxy`
 * Docker image for the `app` container: `widdix/hello:v1`
 * Container port for the `app` container: `80 (tcp)`
-* Docker image for the `ambassador` container: `eeacms/varnish:4.1-6.2`
-* Container port for the `ambassador` container: `6081 (tcp)`
-* Environment variable `BACKENDS` for the `ambassador` container: `localhost`
-* Environment variable `BACKENDS_PORT` for the `ambassador` container: `80`
+* Docker image for the `proxy` container: `eeacms/varnish:4.1-6.2`
+* Container port for the `proxy` container: `6081 (tcp)`
+* Environment variable `BACKENDS` for the `proxy` container: `localhost`
+* Environment variable `BACKENDS_PORT` for the `proxy` container: `80`
 * Log driver for both containers: `awslogs`
 * The task role and task execution role from the previous step
 * Define `0.25` CPU cores and 512 MB memory for the whole task.

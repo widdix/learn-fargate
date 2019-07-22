@@ -42,7 +42,7 @@ You will also need to specify the security group id of the load balancer. Do so,
 Create an ECS service which starts two tasks based on the task definition you created in lab 01. Also make sure to use the following configuration for the service:
 
 * Launch type: `FARGATE`
-* Register port `6081` the `ambassador` container at the target group
+* Register port `6081` the `proxy` container at the target group
 * Add the security group from the previous section
 * Make sure the service starts task with a Public IP in one of your public subnets.
 
