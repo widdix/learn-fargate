@@ -6,7 +6,7 @@ Create an ECS service and make sure the Application Load Balancer (ALB) routes r
 
 ## Instructions
 
-Make sure you are starting from the starting point for Lab 01.
+Make sure you are starting from the starting point for Lab 02.
 
 ```
 cp lab02-service/starting-point/service.yaml service.yaml

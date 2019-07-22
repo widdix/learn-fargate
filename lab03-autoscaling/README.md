@@ -6,7 +6,7 @@ Make sure your ECS service scales the number of tasks based on CPU utilization.
 
 ## Instructions
 
-Make sure you are starting from the starting point for Lab 01.
+Make sure you are starting from the starting point for Lab 03.
 
 ```
 cp lab03-autoscaling/starting-point/service.yaml service.yaml
