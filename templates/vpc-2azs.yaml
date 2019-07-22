@@ -235,7 +235,7 @@ Outputs:
     Value: 'vpc/vpc-2azs'
   TemplateVersion:
     Description: 'cloudonaut.io template version.'
-    Value: '9.0.0'
+    Value: '10.2.0'
   StackName:
     Description: 'Stack name.'
     Value: !Sub '${AWS::StackName}'
