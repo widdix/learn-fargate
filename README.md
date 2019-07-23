@@ -9,8 +9,13 @@ Are you looking for an instructor-led workshop based on these labs? Say [hello@w
 * [Lab 01: ECS Task Definition and IAM Roles](lab01-task-definition/)
 * [Lab 02: ECS Service and Application Load Balancer (ALB)](lab02-service/)
 * [Lab 03: Auto Scaling for ECS Service](lab03-autoscaling/)
+* [Lab 03: RDS Aurora](lab04-rds-aurora/)
 
 ## Setup your personal lab environment
+
+Clone or [download](https://github.com/widdix/learn-fargate/archive/master.zip) this repository on your local machine.
+
+Open the AWS Management Console of an empty AWS account.
 
 Create your own VPC stack. Replace `$user` with your name (e.g. `andreas`).
 
