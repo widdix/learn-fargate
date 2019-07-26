@@ -4,6 +4,8 @@ Labs helping you to learn AWS Fargate within a few hours.
 
 Are you looking for an instructor-led workshop based on these labs? Say [hello@widdix.net](mailto:hello@widdix.net).
 
+> Raise the VPCs per region limit if you run this lab with a larger group of people!
+
 ## Labs
 
 * [Lab 01: ECS Task Definition and IAM Roles](lab01-task-definition/)
