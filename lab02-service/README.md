@@ -44,6 +44,7 @@ Create an ECS service which starts two tasks based on the task definition you cr
 * Launch type: `FARGATE`
 * Register port `6081` the `proxy` container at the target group
 * Add the security group from the previous section
+* Set `TargetType` to `ip`
 * Make sure the service starts task with a Public IP in one of your public subnets.
 
 You will need to specify the ids of the public subnets. Do so, by using the export `vpc-$user-SubnetsPublic` of your cluster stack.
