@@ -74,7 +74,7 @@ Use the following command to create a stack based on your template. Replace `$us
 aws cloudformation create-stack --stack-name service-$user --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user ParameterKey=ParentClusterStack,ParameterValue=cluster-$user --template-body file://service.yaml --capabilities CAPABILITY_IAM
 ```
 
-Manually launch a task in your ECS cluster based on the task definition created by the stack.
+Manually launch a task in your ECS cluster (select a public Subnet of your VPC, and assign a public IP address) based on the task definition created by the stack.
 
 Congratulations, you have completed the first lab. Please proceed with the next lab.
 
