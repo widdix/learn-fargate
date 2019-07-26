@@ -52,3 +52,7 @@ Wait until the stack has been deleted.
 ```
 aws cloudformation delete-stack --stack-name vpc-$user
 ```
+
+## More Labs
+
+We offer AWS workshops tailored to your needs. See [widdix/learn-*](https://github.com/widdix?q=learn-) for more labs.
