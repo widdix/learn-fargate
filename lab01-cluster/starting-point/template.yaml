@@ -1,0 +1,7 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'learn-fargate: lab01'
+Resources:
+  Cluster:
+    Type: 'AWS::ECS::Cluster'
+    # TODO

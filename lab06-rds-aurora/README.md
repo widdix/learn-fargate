@@ -1,4 +1,4 @@
-# Lab 04: RDS Aurora
+# Lab 06: RDS Aurora
 
 ## Goal
 
@@ -6,15 +6,15 @@ Connect your ECS service with an RDS Aurora MySQL cluster.
 
 ## Instructions
 
-Make sure you are starting from the starting point for Lab 04.
+Make sure you are starting from the starting point for Lab 06.
 
 ```
-cp lab04-rds-aurora/starting-point/service.yaml service.yaml
+cp lab06-rds-aurora/starting-point/template.yaml template.yaml
 ```
 
-Extend the CloudFormation template at `service.yaml` with the following resources.
+Extend the CloudFormation template (`template.yaml`) with the following resources.
 
-Note that the `service.yaml` template contains new KMS resources `DBKey`, `DBKeyAlias` and the resource `DBSecret` that contains a random password managed by Secrets Manager.
+Note that the `template.yaml` template contains new KMS resources `DBKey`, `DBKeyAlias` and the resource `DBSecret` that contains a random password managed by Secrets Manager.
 
 ### Task Execution Role needs adjustment
 
@@ -42,9 +42,24 @@ The database should run in private subnets. You can get the subnet ids with this
 
 Define an encrypted MySQL Aurora cluster. The `MasterUserPassword` needs to be fetched from Secrets Manager without making the password visible in plain-text.
 
-## DBInstanceA and DBInstanceB
+### DBInstanceA and DBInstanceB
 
 Define at least two database instances for high availability to join the cluster.
+
+Finally, create or update your own ECS stack. Replace `$user` with your name (e.g. `andreas`).
+
+```
+aws cloudformation create-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
+aws cloudformation update-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
+```
+
+Wait until the stack reaches the status `UPDATE_COMPLETE`. Afterwards, use the following command to obtain the URL of your load balancer. Replace `$user` with your name (e.g. `andreas`).
+
+```
+aws cloudformation describe-stacks --stack-name ecs-$user --query 'Stacks[0].Outputs[?OutputKey==`URL`].OutputValue' --output text
+```
+
+Open the URL in your browser. You should see a page that says "It works!"
 
 # Help
 

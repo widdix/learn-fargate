@@ -1,25 +1,6 @@
 ---
-# Copyright 2018 widdix GmbH
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# This template is based on https://github.com/widdix/aws-cf-templates/blob/master/fargate/service-cluster-alb.yaml
-# and https://github.com/widdix/aws-cf-templates/blob/master/state/rds-aurora.yaml
-# and https://github.com/widdix/aws-cf-templates/blob/master/security/kms-key.yaml
-# and https://github.com/cfn-modules/secret/blob/master/module.yml
-#
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'learn-fargate, a cloudonaut.io template'
+Description: 'learn-fargate: lab06'
 Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
@@ -27,45 +8,51 @@ Metadata:
         default: 'Parent Stacks'
       Parameters:
       - ParentVPCStack
-      - ParentClusterStack
 Parameters:
   ParentVPCStack:
     Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
     Type: String
-  ParentClusterStack:
-    Description: 'Stack name of parent Cluster stack based on fargate/cluster.yaml template.'
-    Type: String
 Resources:
-  TargetGroup:
-    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+  Cluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties: {}
+  LoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      HealthCheckIntervalSeconds: 15
-      HealthCheckPath: '/'
-      HealthCheckProtocol: HTTP
-      HealthCheckTimeoutSeconds: 10
-      HealthyThresholdCount: 2
-      UnhealthyThresholdCount: 2
-      Matcher:
-        HttpCode: '200-299'
-      Port: 8080 # overriden when containers are attached
-      Protocol: HTTP
-      TargetType: ip
-      TargetGroupAttributes:
-      - Key: 'deregistration_delay.timeout_seconds'
-        Value: '30'
+      GroupDescription: !Sub '${AWS::StackName}-load-balancer'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: '0.0.0.0/0'
       VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
-  LoadBalancerListenerRule:
-    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+  LoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
     Properties:
-      Actions:
-      - Type: forward
-        TargetGroupArn: !Ref TargetGroup
-      Conditions:
-      - Field: path-pattern
-        Values:
-        - '*'
-      ListenerArn: {'Fn::ImportValue': !Sub '${ParentClusterStack}-HttpListener'}
-      Priority: 10
+      LoadBalancerAttributes:
+      - Key: 'idle_timeout.timeout_seconds'
+        Value: '60'
+      Scheme: 'internet-facing'
+      SecurityGroups:
+      - !Ref LoadBalancerSecurityGroup
+      Subnets: !Split [',', {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetsPublic'}]
+      Type: application
+  HttpListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+      - FixedResponseConfig:
+          ContentType: 'text/plain'
+          MessageBody: default
+          StatusCode: '404'
+        Type: 'fixed-response'
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 1
   TaskExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -91,7 +78,12 @@ Resources:
             - 'logs:CreateLogStream'
             - 'logs:PutLogEvents'
             Resource: !GetAtt 'LogGroup.Arn'
-          - # TODO
+          - Effect: Allow
+            Action: 'kms:Decrypt'
+            Resource: !GetAtt 'DBKey.Arn'
+          - Effect: Allow
+            Action: 'secretsmanager:GetSecretValue'
+            Resource: !Ref DBSecret
   TaskRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -130,9 +122,11 @@ Resources:
             'awslogs-group': !Ref LogGroup
             'awslogs-stream-prefix': app
         Environment:
-        # TODO
+        - Name: RDS_HOSTNAME
+          Value: !GetAtt 'DBCluster.Endpoint.Address'
         Secrets:
-        # TODO
+        - Name: RDS_PASSWORD
+          ValueFrom: !Ref DBSecret
       Cpu: '256'
       ExecutionRoleArn: !GetAtt 'TaskExecutionRole.Arn'
       Family: !Ref 'AWS::StackName'
@@ -140,17 +134,43 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities: [FARGATE]
       TaskRoleArn: !GetAtt 'TaskRole.Arn'
-  LogGroup:
-    Type: 'AWS::Logs::LogGroup'
+  TargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
     Properties:
-      RetentionInDays: 1
+      HealthCheckIntervalSeconds: 15
+      HealthCheckPath: '/'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200-299'
+      Port: 8080 # overriden when containers are attached
+      Protocol: HTTP
+      TargetType: ip
+      TargetGroupAttributes:
+      - Key: 'deregistration_delay.timeout_seconds'
+        Value: '30'
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+  LoadBalancerListenerRule:
+    Type: 'AWS::ElasticLoadBalancingV2::ListenerRule'
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      Conditions:
+      - Field: path-pattern
+        Values:
+        - '*'
+      ListenerArn: !Ref HttpListener
+      Priority: 10
   ServiceSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: !Sub '${AWS::StackName}-service'
       VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
       SecurityGroupIngress:
-      - SourceSecurityGroupId: {'Fn::ImportValue': !Sub '${ParentClusterStack}-LoadBalancerSecurityGroup'}
+      - SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
         FromPort: 80
         ToPort: 80
         IpProtocol: tcp
@@ -158,7 +178,7 @@ Resources:
     DependsOn: LoadBalancerListenerRule
     Type: 'AWS::ECS::Service'
     Properties:
-      Cluster: {'Fn::ImportValue': !Sub '${ParentClusterStack}-Cluster'}
+      Cluster: !Ref Cluster
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 100
@@ -219,10 +239,19 @@ Resources:
         ExcludeCharacters: '"@/\'
   DBSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
-    # TODO
+    Properties:
+      GroupDescription: !Ref 'AWS::StackName'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        SourceSecurityGroupId: !Ref ServiceSecurityGroup
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
   DBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
-    # TODO
+    Properties:
+      DBSubnetGroupDescription: !Ref 'AWS::StackName'
+      SubnetIds: !Split [',', {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetsPrivate'}]
   DBClusterParameterGroup:
     Type: 'AWS::RDS::DBClusterParameterGroup'
     Properties:
@@ -238,13 +267,26 @@ Resources:
         collation_connection: utf8_general_ci
         collation_server: utf8_general_ci
   DBCluster:
+    DeletionPolicy: Snapshot # default
+    UpdateReplacePolicy: Snapshot
     Type: 'AWS::RDS::DBCluster'
     Properties:
+      BackupRetentionPeriod: 30
       DatabaseName: test
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
       Engine: 'aurora-mysql'
+      EngineMode: provisioned
       EngineVersion: '5.7.mysql_aurora.2.04.3'
+      KmsKeyId: !Ref DBKey
       MasterUsername: master
-    # TODO
+      MasterUserPassword: !Sub '{{resolve:secretsmanager:${DBSecret}}}'
+      Port: 3306
+      PreferredBackupWindow: '09:54-10:24'
+      PreferredMaintenanceWindow: 'sat:07:00-sat:07:30'
+      StorageEncrypted: true
+      VpcSecurityGroupIds:
+      - !Ref DBSecurityGroup
   DBParameterGroup:
     Type: 'AWS::RDS::DBParameterGroup'
     Properties:
@@ -253,10 +295,25 @@ Resources:
   DBInstanceA:
     Type: 'AWS::RDS::DBInstance'
     Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: 'db.t2.small'
+      DBParameterGroupName: !Ref DBParameterGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
       Engine: 'aurora-mysql'
-      # TODO
   DBInstanceB:
     Type: 'AWS::RDS::DBInstance'
     Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DBClusterIdentifier: !Ref DBCluster
+      DBInstanceClass: 'db.t2.small'
+      DBParameterGroupName: !Ref DBParameterGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
       Engine: 'aurora-mysql'
-      # TODO
+Outputs:
+  URL:
+    Value: !Sub 'http://${LoadBalancer.DNSName}'
