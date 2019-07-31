@@ -1,0 +1,34 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'learn-fargate: lab02'
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'Parent Stacks'
+      Parameters:
+      - ParentVPCStack
+Parameters:
+  ParentVPCStack:
+    Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
+    Type: String
+Resources:
+  Cluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties: {}
+  LoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Sub '${AWS::StackName}-load-balancer'
+      SecurityGroupIngress:
+      - # TODO
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+  LoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    # TODO
+  HttpListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    # TODO
+Outputs:
+  URL:
+    Value: !Sub 'http://${LoadBalancer.DNSName}'

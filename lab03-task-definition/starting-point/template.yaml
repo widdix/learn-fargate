@@ -1,0 +1,66 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'learn-fargate: lab03'
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'Parent Stacks'
+      Parameters:
+      - ParentVPCStack
+Parameters:
+  ParentVPCStack:
+    Description: 'Stack name of parent VPC stack based on vpc/vpc-*azs.yaml template.'
+    Type: String
+Resources:
+  Cluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties: {}
+  LoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Sub '${AWS::StackName}-load-balancer'
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: '0.0.0.0/0'
+      VpcId: {'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'}
+  LoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      LoadBalancerAttributes:
+      - Key: 'idle_timeout.timeout_seconds'
+        Value: '60'
+      Scheme: 'internet-facing'
+      SecurityGroups:
+      - !Ref LoadBalancerSecurityGroup
+      Subnets: !Split [',', {'Fn::ImportValue': !Sub '${ParentVPCStack}-SubnetsPublic'}]
+      Type: application
+  HttpListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+      - FixedResponseConfig:
+          ContentType: 'text/plain'
+          MessageBody: default
+          StatusCode: '404'
+        Type: 'fixed-response'
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    # TODO
+  TaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    # TODO
+  TaskRole:
+    Type: 'AWS::IAM::Role'
+    # TODO
+  TaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    # TODO
+Outputs:
+  URL:
+    Value: !Sub 'http://${LoadBalancer.DNSName}'

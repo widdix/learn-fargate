@@ -8,10 +8,12 @@ Are you looking for an instructor-led workshop based on these labs? Say [hello@w
 
 ## Labs
 
-* [Lab 01: ECS Task Definition and IAM Roles](lab01-task-definition/)
-* [Lab 02: ECS Service and Application Load Balancer (ALB)](lab02-service/)
-* [Lab 03: Auto Scaling for ECS Service](lab03-autoscaling/)
-* [Lab 04: RDS Aurora](lab04-rds-aurora/)
+* [Lab 01: ECS Cluster](lab01-cluster/)
+* [Lab 02: Application Load Balancer](lab02-alb/)
+* [Lab 03: ECS Task Definition and IAM Roles](lab03-task-definition/)
+* [Lab 04: ECS Service and Application Load Balancer (ALB)](lab04-service/)
+* [Lab 05: Auto Scaling for ECS Service](lab05-autoscaling/)
+* [Lab 06: RDS Aurora](lab06-rds-aurora/)
 
 ## Setup your personal lab environment
 
@@ -27,12 +29,6 @@ aws cloudformation create-stack --stack-name vpc-$user --template-body file://te
 
 Wait until the stack reached the status `CREATE_COMPLETE`.
 
-Create your own ECS cluster stack. Replace `$user` with your name (e.g. `andreas`).
-
-```
-aws cloudformation create-stack --stack-name cluster-$user --template-body file://templates/cluster.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
-```
-
 You are now ready for the first lab.
 
 ## Clean up
@@ -40,13 +36,7 @@ You are now ready for the first lab.
 Use the following commands to delete your stacks. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation delete-stack --stack-name service-$user
-```
-
-Wait until the stack has been deleted.
-
-```
-aws cloudformation delete-stack --stack-name cluster-$user
+aws cloudformation delete-stack --stack-name ecs-$user
 ```
 
 Wait until the stack has been deleted.

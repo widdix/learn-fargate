@@ -1,4 +1,4 @@
-# Lab 02: ECS Service and Application Load Balancer (ALB)
+# Lab 04: ECS Service and Application Load Balancer (ALB)
 
 ## Goal
 
@@ -6,13 +6,13 @@ Create an ECS service and make sure the Application Load Balancer (ALB) routes r
 
 ## Instructions
 
-Make sure you are starting from the starting point for Lab 02.
+Make sure you are starting from the starting point for Lab 04.
 
 ```
-cp lab02-service/starting-point/service.yaml service.yaml
+cp lab04-service/starting-point/template.yaml template.yaml
 ```
 
-Extend the CloudFormation template at `service.yaml` with the following resources.
+Extend the CloudFormation template (`template.yaml`) with the following resources.
 
 ### ALB Target Group
 
@@ -35,8 +35,6 @@ You will also need to specify the ECS cluster id for the listener rule. Do so, b
 
 Create a security group which allows incoming `TCP` traffic on port `6081` from the load balancer.
 
-You will also need to specify the security group id of the load balancer. Do so, by using the export `cluster-$user-LoadBalancerSecurityGroup` of your cluster stack.
-
 ### ECS Service
 
 Create an ECS service which starts two tasks based on the task definition you created in lab 01. Also make sure to use the following configuration for the service:
@@ -49,21 +47,20 @@ Create an ECS service which starts two tasks based on the task definition you cr
 
 You will need to specify the ids of the public subnets. Do so, by using the export `vpc-$user-SubnetsPublic` of your cluster stack.
 
-Use the following command to update your service stack based on your template. Replace `$user` with your name (e.g. `andreas`).
+Finally, create or update your own ECS stack. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation update-stack --stack-name service-$user --parameters ParameterKey=ParentVPCStack,UsePreviousValue=true ParameterKey=ParentClusterStack,UsePreviousValue=true --template-body file://service.yaml --capabilities CAPABILITY_IAM
+aws cloudformation create-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
+aws cloudformation update-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
 ```
 
 Wait until the stack reaches the status `UPDATE_COMPLETE`. Afterwards, use the following command to obtain the URL of your load balancer. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation describe-stacks --stack-name cluster-andreas --query 'Stacks[0].Outputs[?OutputKey==`URL`].OutputValue' --output text
+aws cloudformation describe-stacks --stack-name ecs-$user --query 'Stacks[0].Outputs[?OutputKey==`URL`].OutputValue' --output text
 ```
 
-Open the URL in your browser. It works!
-
-Congratulations, you have completed the second lab. Please proceed with the next lab.
+Open the URL in your browser. You should see a page that says "It works!"
 
 ## Help
 

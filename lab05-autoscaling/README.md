@@ -1,4 +1,4 @@
-# Lab 03: Auto Scaling for ECS Service
+# Lab 05: Auto Scaling for ECS Service
 
 ## Goal
 
@@ -6,15 +6,15 @@ Make sure your ECS service scales the number of tasks based on CPU utilization.
 
 ## Instructions
 
-Make sure you are starting from the starting point for Lab 03.
+Make sure you are starting from the starting point for Lab 05.
 
 ```
-cp lab03-autoscaling/starting-point/service.yaml service.yaml
+cp lab05-autoscaling/starting-point/template.yaml template.yaml
 ```
 
-Extend the CloudFormation template at `service.yaml` with the following resources.
+Extend the CloudFormation template (`template.yaml`) with the following resources.
 
-Note that the `service.yaml` template contains a new IAM role named `ScalableTargetRole` which can be used by the scalable target to scale the number of tasks.
+Note that the `template.yaml` template contains a new IAM role named `ScalableTargetRole` which can be used by the scalable target to scale the number of tasks.
 
 ### Scalable Target
 
@@ -28,15 +28,14 @@ Define two scaling policies: one policy to scale up and another policy to scale 
 
 Create two CloudWatch alarms: one alarm to trigger the scale up policy and another alarm to trigger the scale down policy.
 
-Use the following command to update your service stack based on your template. Replace `$user` with your name (e.g. `andreas`).
+Finally, create or update your own ECS stack. Replace `$user` with your name (e.g. `andreas`).
 
 ```
-aws cloudformation update-stack --stack-name service-$user --parameters ParameterKey=ParentVPCStack,UsePreviousValue=true ParameterKey=ParentClusterStack,UsePreviousValue=true --template-body file://service.yaml --capabilities CAPABILITY_IAM
+aws cloudformation create-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
+aws cloudformation update-stack --stack-name ecs-$user --template-body file://template.yaml --parameters ParameterKey=ParentVPCStack,ParameterValue=vpc-$user --capabilities CAPABILITY_IAM
 ```
 
 Wait until the stack reaches the status `UPDATE_COMPLETE`.
-
-Congratulations, you have completed the third lab.
 
 ## Help
 
