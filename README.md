@@ -2,6 +2,11 @@
 
 Labs helping you to learn AWS Fargate within a few hours.
 
+> :books: Check out our new book [Rapid Docker on AWS](https://cloudonaut.io/rapid-docker-on-aws/?utm_source=aws-velocity&utm_medium=doc&utm_campaign=readme)
+> * Written for DevOps engineers and web developers who want to run dockerized web applications on AWS.
+> * Prior knowledge of Docker and AWS is not required.
+> * Continuous Deployment of your Web Application and Infrastructure as Code.
+
 Are you looking for an instructor-led workshop based on these labs? Say [hello@widdix.net](mailto:hello@widdix.net).
 
 > Raise the VPCs per region limit if you run this lab with a larger group of people!
